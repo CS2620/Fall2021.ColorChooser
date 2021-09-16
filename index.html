@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+
+<head>
+  <title></title>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" rel="icon"
+    type="image/x-icon" />
+  <!--tiny.cc/emptyimage-->
+</head>
+
+<body>
+  <div id='app'>
+    <v-app height="100%">
+      <v-app-bar absolute dense dark>
+        <v-toolbar-title>Color Matcher</v-toolbar-title>
+      </v-app-bar>
+      <v-main height="100%">
+        <br>
+        <br>
+        <br>
+        <v-container>
+          <v-row>
+            <v-col cols=6>
+              <v-card>
+                <canvas id="canv"></canvas>
+                <canvas id="canv2"></canvas>
+              </v-card>
+            </v-col>
+            <v-col cols=6>
+              <v-container>
+                <v-row>
+                  <v-col cols=12 v-for="row in rows" :key="row.name">
+                    <v-card>
+                      <v-card-title>
+                        {{row.name}} {{amounts[row.name]}}
+                      </v-card-title>
+                      <v-card-text>
+                        <br>
+                        <v-slider min="0" max="255" step="5" v-model="amounts[row.name]" @input="updateValue(row.name)"> </v-slider>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+  <script src='https://unpkg.com/vue'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+
+  <script>
+
+    const app = new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: {
+        rows: [
+          {
+            name: "red"
+          },
+          {
+            name: "green"
+          },
+          {
+            name: "blue"
+          }
+        ],
+        amounts:{
+          red:0,
+          green:0,
+          blue:0
+        },
+        canv: null,
+        ctx: null,
+        canv2:null,
+        ctx2:null,
+      },
+      mounted() {
+        this.canv = document.querySelector("#canv");
+        this.ctx = this.canv.getContext("2d");
+        let ctx = this.ctx;
+        ctx.fillStyle = "red";
+        ctx.fillRect(0, 0, 100, 100);
+
+        this.canv2 = document.querySelector("#canv2");
+        this.ctx2 = this.canv2.getContext("2d");
+        let ctx2 = this.ctx2;
+        ctx2.fillStyle = "red";
+        ctx2.fillRect(0, 0, this.ctx2.canvas.width, this.ctx2.canvas.height);
+
+        this.update();
+
+      },
+      methods: {
+        update() {
+          if(!this.ctx) return;
+          let ctx = this.ctx;
+          ctx.fillStyle = "green";
+          ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+          ctx = this.ctx2;
+          ctx.fillStyle = `rgb(${this.amounts.red},${this.amounts.green},${this.amounts.blue})`;
+          ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        },
+        updateValue(channel){
+          console.log(channel)
+          this.update();
+        }
+
+      },
+    });
+
+  </script>
+</body>
+
+</html>
