@@ -9,6 +9,13 @@
   <link href="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" rel="icon"
     type="image/x-icon" />
   <!--tiny.cc/emptyimage-->
+  <style>
+    .centered-canvas {
+      margin: 10px auto;
+      padding: 0;
+      display: block;
+    }
+  </style>
 </head>
 
 <body>
@@ -23,24 +30,40 @@
         <br>
         <v-container>
           <v-row>
-            <v-col cols=6>
+            <v-col cols=12 md=6>
               <v-card>
-                <canvas id="canv"></canvas>
-                <canvas id="canv2"></canvas>
+                <v-card-title>
+                  Match the Colors
+                </v-card-title>
+                <v-card-text>
+                  <p>Match the custom color to the target color using the sliders.</p>
+                  <canvas id="canv" class="centered-canvas"></canvas>
+                  <canvas id="canv2" class="centered-canvas"></canvas>
+                </v-card-text>
               </v-card>
             </v-col>
-            <v-col cols=6>
-              <v-container>
+            <v-col cols=12 md=6>
+              <v-container v-for="(colorSpace,index) in colorSpaces" :key="index">
                 <v-row>
-                  <v-col cols=12 v-for="row in rows" :key="row.name">
+                  <v-col cols=12>
                     <v-card>
-                      <v-card-title>
-                        {{row.name}} {{amounts[row.name]}}
-                      </v-card-title>
-                      <v-card-text>
-                        <br>
-                        <v-slider min="0" max="255" step="5" v-model="amounts[row.name]" @input="updateValue(row.name)"> </v-slider>
-                      </v-card-text>
+                      <v-container>
+                        
+                        <v-row v-for="(channel,index) in colorSpace" :key="index" no-guttersl>
+                          <v-col cols="4">
+                            <v-card-text>
+                              {{channel}}
+                            </v-card-text>
+                          </v-col>
+                          <v-col cols="8">
+                            <v-card-text>
+                              <v-slider thumb-label="always" min="0" :max="channel=='hue'?360:255" step="5"
+                                v-model="amounts[channel]" @change="updateValue(channel)">
+                              </v-slider>
+                            </v-card-text>
+                          </v-col>
+                        </v-row>
+                      </v-container>
                     </v-card>
                   </v-col>
                 </v-row>
@@ -56,6 +79,7 @@
   <script src='https://unpkg.com/vue'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+  <script src="colorsys.js"></script>
 
   <script>
 
@@ -63,6 +87,11 @@
       el: '#app',
       vuetify: new Vuetify(),
       data: {
+        colorSpaces: {
+          rgb: ["red", "green", "blue"],
+          hsv: ["hue", "saturation", "value"],
+          cmyk: ["cyan", "magenta", "yellow", "black"]
+        },
         rows: [
           {
             name: "red"
@@ -74,46 +103,83 @@
             name: "blue"
           }
         ],
-        amounts:{
-          red:0,
-          green:0,
-          blue:0
+        amounts: {
+          red: 0,
+          green: 0,
+          blue: 0,
+          hue: 0,
+          saturation: 0,
+          value: 0
+        },
+        target: {
+          red: 0,
+          green: 150,
+          blue: 0
         },
         canv: null,
         ctx: null,
-        canv2:null,
-        ctx2:null,
+        canv2: null,
+        ctx2: null,
       },
       mounted() {
         this.canv = document.querySelector("#canv");
         this.ctx = this.canv.getContext("2d");
-        let ctx = this.ctx;
-        ctx.fillStyle = "red";
-        ctx.fillRect(0, 0, 100, 100);
-
         this.canv2 = document.querySelector("#canv2");
         this.ctx2 = this.canv2.getContext("2d");
-        let ctx2 = this.ctx2;
-        ctx2.fillStyle = "red";
-        ctx2.fillRect(0, 0, this.ctx2.canvas.width, this.ctx2.canvas.height);
-
-        this.update();
+        this.renderCanvases();
 
       },
       methods: {
-        update() {
-          if(!this.ctx) return;
+        renderCanvases() {
+          if (!this.ctx) return;
           let ctx = this.ctx;
-          ctx.fillStyle = "green";
+          ctx.fillStyle = `rgb(${this.target.red},${this.target.green},${this.target.blue})`;
           ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
           ctx = this.ctx2;
           ctx.fillStyle = `rgb(${this.amounts.red},${this.amounts.green},${this.amounts.blue})`;
           ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
         },
-        updateValue(channel){
+        cmykConverter() {
+          console.log("Converting from cmyk")
+          let rgb = colorsys.cmyk2Rgb(this.amounts.cyan/255, this.amounts.magenta/255, this.amounts.yellow/255, this.amounts.black/255)
+          this.amounts.red = rgb.r;
+          this.amounts.green = rgb.g;
+          this.amounts.blue = rgb.b;
+          
+         },
+        hsvConverter() {
+          console.log("Converting from hsv")
+          let rgb = colorsys.hsv2Rgb(this.amounts.hue, this.amounts.saturation, this.amounts.value)
+          this.amounts.red = rgb.r;
+          this.amounts.green = rgb.g;
+          this.amounts.blue = rgb.b;
+          
+         },
+        reverseUpdate() {
+          console.log("Updating everything based on RGB")
+          let hsv = colorsys.rgb2Hsv(this.amounts.red, this.amounts.green, this.amounts.blue)
+          this.amounts.hue = hsv.h;
+          this.amounts.saturation = hsv.s;
+          this.amounts.value = hsv.v;
+
+          let cmyk = colorsys.rgb2Cmyk(this.amounts.red, this.amounts.green, this.amounts.blue);
+          this.amounts.cyan = cmyk.c * 255;
+          this.amounts.magenta = cmyk.m * 255
+          this.amounts.yellow = cmyk.y * 255
+          this.amounts.black = cmyk.k * 255
+
+        },
+        updateValue(channel) {
+          let self = this;
           console.log(channel)
-          this.update();
+          let parent = Object.keys(this.colorSpaces).find(i => self.colorSpaces[i].includes(channel));
+          if (parent != "rgb") {
+            this[parent + "Converter"]();
+          }
+          this.reverseUpdate();
+          console.log(parent);
+          this.renderCanvases();
         }
 
       },
