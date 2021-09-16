@@ -28,40 +28,46 @@
         <br>
         <br>
         <br>
+
         <v-container>
           <v-row>
             <v-col cols=12 md=6>
-              <v-card>
-                <v-card-title>
-                  Match the Colors
-                </v-card-title>
-                <v-card-text>
-                  <p>Match the custom color to the target color using the sliders.</p>
-                  <canvas id="canv" class="centered-canvas"></canvas>
-                  <canvas id="canv2" class="centered-canvas"></canvas>
-                </v-card-text>
-              </v-card>
+              <div class="text-h2">
+                Matched Colors
+              </div>
+              <v-container>
+                <v-row>
+                  <v-col>
+                    <v-card>
+                      <v-card-text>
+                        <p>Match the bottom color to the top color using the sliders.</p>
+                        <canvas id="canv" class="centered-canvas"></canvas>
+                        <canvas id="canv2" class="centered-canvas"></canvas>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-container>
             </v-col>
             <v-col cols=12 md=6>
+              <div class="text-h2">
+                Color Spaces
+              </div>
               <v-container v-for="(colorSpace,index) in colorSpaces" :key="index">
                 <v-row>
-                  <v-col cols=12>
+                  <v-col>
                     <v-card>
                       <v-container>
-                        
-                        <v-row v-for="(channel,index) in colorSpace" :key="index" no-guttersl>
-                          <v-col cols="4">
-                            <v-card-text>
-                              {{channel}}
-                            </v-card-text>
-                          </v-col>
-                          <v-col cols="8">
-                            <v-card-text>
-                              <v-slider thumb-label="always" min="0" :max="channel=='hue'?360:255" step="5"
+                        <v-row >
+                          <v-col v-for="(channel,index) in colorSpace" :key="index" no-gutters>
+                            <div>
+                              {{channel}} {{amounts[channel]}}
+                              <v-slider  min="0" :max="channel=='hue'?360:255" step="5"
                                 v-model="amounts[channel]" @change="updateValue(channel)">
                               </v-slider>
-                            </v-card-text>
+                            </div>
                           </v-col>
+                          
                         </v-row>
                       </v-container>
                     </v-card>
