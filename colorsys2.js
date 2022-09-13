@@ -501,3 +501,4 @@ colorsys.darken = function (color, percentage) {
   return transformFn(nextHsl)
 }
 
+export default colorsys
